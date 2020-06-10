@@ -9,8 +9,8 @@ Go library to handle tens of thousands SSH connections and execute the command(s
 - Persistent SSH connection
 - DSL query based on the labels 
 - Manage number of sessions per SSH connection
-- Limit stdout and stderr streams data 
-- Higher-level API for building device/server automation
+- Limit amount of stdout and stderr data in bytes 
+- Higher-level API for building automation
 
 ### Sample query with label
 ```go
