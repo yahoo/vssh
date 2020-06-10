@@ -2,6 +2,9 @@
 
 Go library to handle tens of thousands SSH connections and execute the command(s) with higher-level API for building network device / server automation.
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/yahoo/vssh)](https://goreportcard.com/report/github.com/yahoo/vssh)
+[![GoDoc](https://godoc.org/github.com/yahoo/vssh?status.svg)](https://godoc.org/github.com/yahoo/vssh)
+
 ![Alt text](/docs/imgs/vssh.png?raw=true "vSSH")
 
 ## Features
