@@ -383,7 +383,7 @@ func (v *VSSH) SetLogger(l *log.Logger) {
 // SetClientsShardNumber sets clients shard number
 //
 // Sharding implemented to get better performance on the clients
-// maintenace. vSSH uses map data structure to keep the clients
+// maintenance. vSSH uses map data structure to keep the clients
 // information in the memory. sharding helps to have better performance
 // on write/read with mutex. you can tune it if needed.
 func SetClientsShardNumber(n int) {
