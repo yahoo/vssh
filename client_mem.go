@@ -46,8 +46,8 @@ func (c clients) del(key string) {
 }
 func (c clients) get(key string) (*clientAttr, bool) {
 	shard := c.getShard(key)
-	c[shard].Lock()
-	defer c[shard].Unlock()
+	c[shard].RLock()
+	defer c[shard].RUnlock()
 	v, ok := c[shard].clients[key]
 	return v, ok
 }
