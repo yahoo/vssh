@@ -105,7 +105,7 @@ func ExampleGetText() {
 }
 
 // This example demonstrates integration vSSH with AWS EC2
-func Example_AWS() {
+func Example_other() {
 	vs := vssh.New().Start()
 	config, _ := vssh.GetConfigPEM("ubuntu", "myaws.pem")
 
