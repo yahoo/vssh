@@ -27,7 +27,7 @@ var (
 	resetErrRecentSec          = 300
 	reConnSec                  = 10
 
-	errSSHConfig = errors.New("SSH config can not be nil")
+	errSSHConfig = errors.New("ssh config can not be nil")
 )
 
 // VSSH represents X SSH
@@ -81,8 +81,9 @@ func New() *VSSH {
 
 // OnDemand changes VSSH connection behavior. by default VSSH
 // connects to all of the clients before any run request and
-// it maintains the authenticated SSH connection to all clients but
-// with OnDemand it tries to connect to clients once the run requested
+// it maintains the authenticated SSH connection to all clients
+// we can call this "persistent SSH connection" but with
+// OnDemand it tries to connect to clients once the run requested
 // and it closes the appropriate connection once the response data returned.
 func (v *VSSH) OnDemand() *VSSH {
 	v.mode = true
@@ -170,6 +171,8 @@ func clientValidation(c *clientAttr) error {
 }
 
 // Start starts vSSH, including action queue and re-connect procedures
+// you can construct and start the vssh like below:
+//	vs := vssh.New().Start()
 func (v *VSSH) Start() *VSSH {
 	ctx := context.Background()
 	go v.process(ctx)
@@ -269,6 +272,14 @@ func (v *VSSH) Run(ctx context.Context, cmd string, timeout time.Duration, opts 
 
 // RunWithLabel runs the command on the specific clients which
 // they matched with given query statement.
+//	labels := map[string]string {
+//  	"POP" : "LAX",
+//  	"OS" : "JUNOS",
+//	}
+//	// sets labels to a client
+//	vs.AddClient(addr, config, vssh.SetLabels(labels))
+//	// run the command with label
+//	vs.RunWithLabel(ctx, cmd, timeout, "POP == LAX || POP == DCA) && OS == JUNOS")
 func (v *VSSH) RunWithLabel(ctx context.Context, cmd, queryStmt string, timeout time.Duration, opts ...RunOption) (chan *Response, error) {
 	vis, err := parseExpr(queryStmt)
 	if err != nil {
@@ -296,6 +307,7 @@ func (v *VSSH) RunWithLabel(ctx context.Context, cmd, queryStmt string, timeout 
 }
 
 // SetLimitReaderStdout sets limit for stdout reader
+//	respChan := vs.Run(ctx, cmd, timeout, SetLimitReaderStdout(1024))
 func SetLimitReaderStdout(n int64) RunOption {
 	return func(q *query) {
 		q.limitReadOut = n
@@ -382,9 +394,8 @@ func (v *VSSH) SetLogger(l *log.Logger) {
 
 // SetClientsShardNumber sets clients shard number
 //
-// Sharding implemented to get better performance on the clients
-// maintenance. vSSH uses map data structure to keep the clients
-// information in the memory. sharding helps to have better performance
+// vSSH uses map data structure to keep the clients
+// data in the memory. sharding helps to have better performance
 // on write/read with mutex. you can tune it if needed.
 func SetClientsShardNumber(n int) {
 	clientsShardNum = n
