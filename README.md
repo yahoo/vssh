@@ -1,9 +1,10 @@
 # vSSH
 
-Go library to handle tens of thousands SSH connections and execute the command(s) with higher-level API for building network device / server automation.
+Go library to handle tens of thousands SSH connections and execute the command(s) with higher-level API for building network device / server automation. documentation and examples are available via [godoc](https://godoc.org/github.com/yahoo/vssh).
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/yahoo/vssh)](https://goreportcard.com/report/github.com/yahoo/vssh)
 [![GoDoc](https://godoc.org/github.com/yahoo/vssh?status.svg)](https://godoc.org/github.com/yahoo/vssh)
+[![GitHub license](https://img.shields.io/badge/license-Apache%202-blue)](LICENSE)
 
 ![Alt text](/docs/imgs/vssh.png?raw=true "vSSH")
 
@@ -76,7 +77,7 @@ if err := resp.Err(); err != nil {
 stream := resp.GetStream()
 defer stream.Close()
 
-for stream.ScanStdout{
+for stream.ScanStdout() {
   txt := stream.TextStdout()
   fmt.Println(txt)
 }
