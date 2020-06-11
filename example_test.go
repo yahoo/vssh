@@ -50,7 +50,7 @@ func ExampleStream() {
 }
 
 // This example demonstrates the use of GetText() for two hosts.
-func ExampleGetText() {
+func ExampleResponse() {
 	// construct and start the vssh
 	vs := vssh.New().Start()
 
@@ -105,7 +105,7 @@ func ExampleGetText() {
 }
 
 // This example demonstrates integration vSSH with AWS EC2
-func Example_other() {
+func Example_cloud() {
 	vs := vssh.New().Start()
 	config, _ := vssh.GetConfigPEM("ubuntu", "myaws.pem")
 
