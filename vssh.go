@@ -1,6 +1,17 @@
 //: Copyright Verizon Media
 //: Licensed under the terms of the Apache 2.0 License. See LICENSE file in the project root for terms.
 
+// Package vssh is a Go library to handle tens of thousands SSH connections and execute
+// the command with higher-level API for building network device / server automation.
+//
+//	run(ctx, command, timeout)
+//	runWithLabel(ctx, command, timeout, "OS == Ubuntu && POP == LAX")
+//
+// By calling the run method vssh sends the given command to all available clients or
+// based on your query it runs the command on the specific clients and the results of
+// the ran command can be received in two options, streaming or final result.In streaming
+// you can get line by line from command’s stdout / stderr in real time or in case of
+// non-real time you can get the whole of the lines together.
 package vssh
 
 import (
@@ -30,7 +41,7 @@ var (
 	errSSHConfig = errors.New("ssh config can not be nil")
 )
 
-// VSSH represents X SSH
+// VSSH represents VSSH instance.
 type VSSH struct {
 	clients clients
 	logger  *log.Logger
@@ -55,13 +66,13 @@ type task interface {
 	run(v *VSSH)
 }
 
-// ClientOption represents client optional parameters
+// ClientOption represents client optional parameters.
 type ClientOption func(c *clientAttr)
 
-// RunOption represents run optional parameters
+// RunOption represents run optional parameters.
 type RunOption func(q *query)
 
-// New constructs a new XSSH
+// New constructs a new VSSH instance.
 func New() *VSSH {
 	return &VSSH{
 		clients: newClients(),
@@ -90,7 +101,7 @@ func (v *VSSH) OnDemand() *VSSH {
 	return v
 }
 
-// AddClient adds a new SSH client to VSSH
+// AddClient adds a new SSH client to VSSH.
 func (v *VSSH) AddClient(addr string, config *ssh.ClientConfig, opts ...ClientOption) error {
 	client := &clientAttr{
 		addr:        addr,
@@ -123,14 +134,14 @@ func (v *VSSH) AddClient(addr string, config *ssh.ClientConfig, opts ...ClientOp
 	return nil
 }
 
-// SetMaxSessions sets maximum sessions for given client
+// SetMaxSessions sets maximum sessions for given client.
 func SetMaxSessions(n int) ClientOption {
 	return func(c *clientAttr) {
 		c.maxSessions = uint8(n)
 	}
 }
 
-// RequestPty sets the pty parameters
+// RequestPty sets the pty parameters.
 func RequestPty(is, os, w, h uint) ClientOption {
 	return func(c *clientAttr) {
 		c.pty = pty{
@@ -143,14 +154,14 @@ func RequestPty(is, os, w, h uint) ClientOption {
 	}
 }
 
-// DisableRequestPty disables the pty
+// DisableRequestPty disables the pty.
 func DisableRequestPty() ClientOption {
 	return func(c *clientAttr) {
 		c.pty.enabled = false
 	}
 }
 
-// SetLabels sets labels for a client
+// SetLabels sets labels for a client.
 func SetLabels(labels map[string]string) ClientOption {
 	return func(c *clientAttr) {
 		c.labels = labels
@@ -170,7 +181,7 @@ func clientValidation(c *clientAttr) error {
 	return nil
 }
 
-// Start starts vSSH, including action queue and re-connect procedures
+// Start starts vSSH, including action queue and re-connect procedures.
 // you can construct and start the vssh like below:
 //	vs := vssh.New().Start()
 func (v *VSSH) Start() *VSSH {
@@ -185,7 +196,7 @@ func (v *VSSH) Start() *VSSH {
 	return v
 }
 
-// StartWithContext is same as Run but it accepts external context
+// StartWithContext is same as Run but it accepts external context.
 func (v *VSSH) StartWithContext(ctx context.Context) *VSSH {
 	go v.process(ctx)
 	go v.reConnect(ctx)
@@ -223,7 +234,7 @@ func (v *VSSH) process(ctx context.Context) {
 	}
 }
 
-// IncreaseProc adds more processes / workers
+// IncreaseProc adds more processes / workers.
 func (v *VSSH) IncreaseProc(n ...int) {
 	num := 1
 	if len(n) > 0 {
@@ -235,7 +246,7 @@ func (v *VSSH) IncreaseProc(n ...int) {
 	}
 }
 
-// DecreaseProc destroy the idle processes / workers
+// DecreaseProc destroy the idle processes / workers.
 func (v *VSSH) DecreaseProc(n ...int) {
 	num := 1
 	if len(n) > 0 {
@@ -247,7 +258,7 @@ func (v *VSSH) DecreaseProc(n ...int) {
 	}
 }
 
-// Run sends a new run query with given context, command and timeout
+// Run sends a new run query with given context, command and timeout.
 //
 // timeout allows you to set a limit on the length of time the command
 // will run for. you can cancel the running command by context.WithCancel.
@@ -306,7 +317,7 @@ func (v *VSSH) RunWithLabel(ctx context.Context, cmd, queryStmt string, timeout 
 	return respChan, nil
 }
 
-// SetLimitReaderStdout sets limit for stdout reader
+// SetLimitReaderStdout sets limit for stdout reader.
 //	respChan := vs.Run(ctx, cmd, timeout, SetLimitReaderStdout(1024))
 func SetLimitReaderStdout(n int64) RunOption {
 	return func(q *query) {
@@ -314,7 +325,7 @@ func SetLimitReaderStdout(n int64) RunOption {
 	}
 }
 
-// SetLimitReaderStderr sets limit for stderr reader
+// SetLimitReaderStderr sets limit for stderr reader.
 func SetLimitReaderStderr(n int64) RunOption {
 	return func(q *query) {
 		q.limitReadErr = n
@@ -345,7 +356,7 @@ func (v *VSSH) reConnect(ctx context.Context) {
 	}
 }
 
-// Wait stands by until percentage of the clients have been processed
+// Wait stands by until percentage of the clients have been processed.
 // there is optional perentage as argument otherwise the percentage assumes 100%
 func (v *VSSH) Wait(p ...int) (float64, error) {
 	var (
@@ -401,11 +412,16 @@ func SetClientsShardNumber(n int) {
 	clientsShardNum = n
 }
 
-// SetInitNumProcess sets the initial number of processes / workers
+// SetInitNumProcess sets the initial number of processes / workers.
 //
-// you need to set this number right after new VSSH (before run)
-// in the middle, you can increase or decrease the number of workers
-// by IncreaseProc or DecreaseProc methods.
+// you need to set this number right after create vssh.
+//	vs := vssh.New()
+//	vs.SetInitNumProcess(200)
+//	vs.Run()
+// there are two other methods which in case you need to change
+// it at the middle of your code.
+//	IncreaseProc(n int)
+//	DecreaseProc(n int)
 func SetInitNumProcess(n int) {
 	initNumProcess = n
 }
