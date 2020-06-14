@@ -85,6 +85,16 @@ func TestAddClient(t *testing.T) {
 	if ok {
 		t.Error("expect to have not 127.0.0.2:22 but it's exist")
 	}
+
+	err := vs.AddClient("127.0.0.1:22", nil)
+	if err == nil {
+		t.Error("client validation failed")
+	}
+
+	err = vs.AddClient("127.0.0.1", config)
+	if err == nil {
+		t.Error("client validation failed")
+	}
 }
 
 func TestIsSessionsMaxOut(t *testing.T) {
@@ -443,4 +453,57 @@ func TestClientsRace(t *testing.T) {
 	}
 
 	wg.Wait()
+}
+
+func TestNewSession(t *testing.T) {
+	vs := New().Start()
+	config := GetConfigUserPass("vssh", "vssh")
+	vs.AddClient(sshTestSrvAddr, config, SetMaxSessions(2), DisableRequestPty())
+	vs.Wait()
+
+	client, _ := vs.clients.get(sshTestSrvAddr)
+	session, err := client.newSession()
+	if err != nil {
+		t.Fatal("unexpected error", err)
+	}
+	session.Close()
+
+	// enable pty - test server doesn't support
+	client.pty.enabled = true
+	session, err = client.newSession()
+	if err == nil {
+		t.Fatal("expect error but got", err)
+	}
+}
+
+func TestClientMemGetShard(t *testing.T) {
+	tmp := clientsShardNum
+	clients := newClients()
+	clientsShardNum = 10
+	shard := clients.getShard("10.0.0.1:22")
+	clientsShardNum = tmp
+	if shard != 9 {
+		t.Error("expect shard == 9 but got", shard)
+	}
+}
+
+func TestClientMem(t *testing.T) {
+	addr := "10.0.0.1:22"
+	clients := newClients()
+	client := &clientAttr{addr: addr}
+	clients.add(client)
+	c, ok := clients.get(addr)
+	if !ok {
+		t.Fatal("expect get client returns a client but not exist")
+	}
+
+	if c != client {
+		t.Error("get client returns wrong client")
+	}
+
+	clients.del(addr)
+	_, ok = clients.get(addr)
+	if ok {
+		t.Errorf("expect client %s deleted but still exist", addr)
+	}
 }
