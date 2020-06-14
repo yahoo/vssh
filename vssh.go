@@ -35,10 +35,11 @@ var (
 	maxEstablishedRetry        = 20
 	actionQueueSize            = 1000
 	initNumProcess             = 1000
-	resetErrRecentSec          = 300
-	reConnSec                  = 10
+	resetErrRecentSec          = time.Duration(300) * time.Second
+	reConnSec                  = time.Duration(10) * time.Second
 
 	errSSHConfig = errors.New("ssh config can not be nil")
+	errNotExist  = errors.New("not exist")
 )
 
 // VSSH represents VSSH instance.
@@ -56,10 +57,11 @@ type VSSH struct {
 }
 
 type stats struct {
-	errors   uint64
-	queries  uint64
-	clients  uint64
-	connects uint64
+	errors    uint64
+	queries   uint64
+	clients   uint64
+	connects  uint64
+	processes uint64
 }
 
 type task interface {
@@ -110,10 +112,14 @@ func (v *VSSH) AddClient(addr string, config *ssh.ClientConfig, opts ...ClientOp
 		logger:      v.logger,
 		pty: pty{
 			enabled: true,
-			ispeed:  14400,
-			ospeed:  14400,
-			wide:    80,
-			height:  40,
+			term:    "xterm",
+			modes: ssh.TerminalModes{
+				ssh.ECHO:          0,
+				ssh.TTY_OP_ISPEED: 14400,
+				ssh.TTY_OP_OSPEED: 14400,
+			},
+			wide:   80,
+			height: 40,
 		},
 	}
 
@@ -142,12 +148,12 @@ func SetMaxSessions(n int) ClientOption {
 }
 
 // RequestPty sets the pty parameters.
-func RequestPty(is, os, w, h uint) ClientOption {
+func RequestPty(term string, h, w uint, modes ssh.TerminalModes) ClientOption {
 	return func(c *clientAttr) {
 		c.pty = pty{
 			enabled: true,
-			ispeed:  is,
-			ospeed:  os,
+			term:    term,
+			modes:   modes,
 			wide:    w,
 			height:  h,
 		}
@@ -223,6 +229,7 @@ func (v *VSSH) process(ctx context.Context) {
 						b.run(v)
 					}
 				case <-v.procSig:
+					atomic.AddUint64(&v.stats.processes, ^uint64(0))
 					return
 				case <-ctx.Done():
 					return
@@ -231,6 +238,7 @@ func (v *VSSH) process(ctx context.Context) {
 		}()
 
 		<-v.procCtl
+		v.stats.processes++
 	}
 }
 
@@ -254,7 +262,7 @@ func (v *VSSH) DecreaseProc(n ...int) {
 	}
 
 	for i := 0; i < num; i++ {
-		v.procCtl <- struct{}{}
+		v.procSig <- struct{}{}
 	}
 }
 
@@ -339,14 +347,14 @@ func (v *VSSH) reConnect(ctx context.Context) {
 
 	for {
 		select {
-		case <-time.Tick(time.Second * time.Duration(reConnSec)):
+		case <-time.Tick(reConnSec):
 			for client := range v.clients.enum() {
 				if client.err != nil && client.stats.errRecent < maxErrRecent {
 					if client.client != nil {
 						client.client.Close()
 					}
 					v.actionQ <- &connect{client}
-				} else if time.Since(client.lastUpdate) > time.Second*time.Duration(resetErrRecentSec) {
+				} else if time.Since(client.lastUpdate) > resetErrRecentSec {
 					client.stats.errRecent = 0
 				}
 			}
@@ -354,6 +362,22 @@ func (v *VSSH) reConnect(ctx context.Context) {
 			return
 		}
 	}
+}
+
+// ForceReConn reconnects client immediately
+func (v *VSSH) ForceReConn(addr string) error {
+	client, ok := v.clients.get(addr)
+	if !ok {
+		return errNotExist
+	}
+
+	if client.client != nil {
+		client.client.Close()
+	}
+
+	v.actionQ <- &connect{client}
+
+	return nil
 }
 
 // Wait stands by until percentage of the clients have been processed.
@@ -398,12 +422,12 @@ func (v *VSSH) Wait(p ...int) (float64, error) {
 	return time.Since(start).Seconds(), nil
 }
 
-// SetLogger sets external logger
+// SetLogger sets external logger.
 func (v *VSSH) SetLogger(l *log.Logger) {
 	v.logger = l
 }
 
-// SetClientsShardNumber sets clients shard number
+// SetClientsShardNumber sets clients shard number.
 //
 // vSSH uses map data structure to keep the clients
 // data in the memory. sharding helps to have better performance
@@ -417,7 +441,7 @@ func SetClientsShardNumber(n int) {
 // you need to set this number right after create vssh.
 //	vs := vssh.New()
 //	vs.SetInitNumProcess(200)
-//	vs.Run()
+//	vs.Start()
 // there are two other methods which in case you need to change
 // it at the middle of your code.
 //	IncreaseProc(n int)
