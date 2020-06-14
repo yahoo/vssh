@@ -94,10 +94,10 @@ type connect struct {
 // pty represents pty attribute
 type pty struct {
 	enabled bool
+	term    string
+	modes   ssh.TerminalModes
 	wide    uint
 	height  uint
-	ispeed  uint
-	ospeed  uint
 }
 
 // run executes the command on the client
@@ -254,17 +254,11 @@ func (c *clientAttr) newSession() (*ssh.Session, error) {
 	}
 
 	if c.pty.enabled {
-		modes := ssh.TerminalModes{
-			ssh.ECHO:          0,
-			ssh.TTY_OP_ISPEED: uint32(c.pty.ispeed),
-			ssh.TTY_OP_OSPEED: uint32(c.pty.ospeed),
-		}
-
 		err := s.RequestPty(
-			"xterm",
+			c.pty.term,
 			int(c.pty.height),
 			int(c.pty.wide),
-			modes)
+			c.pty.modes)
 
 		if err != nil {
 			c.decSessions()
