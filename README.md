@@ -4,9 +4,8 @@ Go library to handle tens of thousands SSH connections and execute the command(s
 
 [![Build Status](https://api.travis-ci.com/yahoo/vssh.svg?branch=master)](https://travis-ci.com/github/yahoo/vssh) 
 [![Go Report Card](https://goreportcard.com/badge/github.com/yahoo/vssh)](https://goreportcard.com/report/github.com/yahoo/vssh)
-[![Coverage Status](https://coveralls.io/repos/github/yahoo/vssh/badge.svg?branch=master)](https://coveralls.io/github/yahoo/vssh?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/yahoo/vssh/badge.svg?branch=master&service=github)](https://coveralls.io/github/yahoo/vssh?branch=master)
 [![GoDoc](https://godoc.org/github.com/yahoo/vssh?status.svg)](https://godoc.org/github.com/yahoo/vssh)
-[![GitHub license](https://img.shields.io/badge/license-Apache%202-blue)](LICENSE)
 
 ![Alt text](/docs/imgs/vssh.png?raw=true "vSSH")
 
@@ -57,7 +56,7 @@ for resp := range respChan {
 }
 ```
 
-### Stream Example
+### Stream example
 ```go
 vs := vssh.New().Start()
 config, _ := vssh.GetConfigPEM("mypem.pem")
@@ -84,6 +83,12 @@ for stream.ScanStdout() {
   fmt.Println(txt)
 }
 ```
+## Supported platform
+- Linux
+- Windows
+- Darwin
+- BSD
+- Solaris
 
 ## License
 Code is licensed under the Apache License, Version 2.0 (the "License"). 
