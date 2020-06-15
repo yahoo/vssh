@@ -22,6 +22,7 @@ var (
 	errUnreachable = errors.New("client unreachable")
 	errTimeout     = errors.New("execution timeout")
 	errSessNotEst  = errors.New("session not established")
+	errNotConn     = errors.New("client hasn't connected")
 
 	maxOutChanBuf = 100
 	maxErrChanBuf = 100
@@ -114,9 +115,8 @@ func (c *clientAttr) run(q *query) {
 	)
 
 	if c.client == nil {
-		err := errors.New("client hasn't connected yet")
-		c.setErr(err)
-		q.errResp(c.addr, err)
+		c.setErr(errNotConn)
+		q.errResp(c.addr, errNotConn)
 		return
 	}
 
@@ -202,7 +202,7 @@ LOOP:
 	for {
 		select {
 		case in := <-rcIn:
-			fmt.Fprint(writer, in)
+			fmt.Fprint(writer, string(in))
 		case sig := <-rcSig:
 			session.Signal(sig)
 		case <-q.ctx.Done():
@@ -554,8 +554,8 @@ func (s *Stream) Signal(sig ssh.Signal) {
 }
 
 // Input writes the given reader to remote command's standard
-// input when the command starts
-func (s *Stream) Input(in io.ReadCloser) {
+// input when the command starts.
+func (s *Stream) Input(in io.Reader) {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(in)
 	s.r.inChan <- buf.Bytes()
