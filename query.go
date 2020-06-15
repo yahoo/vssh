@@ -26,6 +26,7 @@ const (
 )
 
 var errNotSupportOperator = errors.New("operator doesn't support")
+var errQuery = errors.New("query error")
 
 type query struct {
 	cmd           string
@@ -48,7 +49,7 @@ type ident struct {
 }
 
 func (q *query) errResp(id string, err error) {
-	err = fmt.Errorf("client [%s]: %s", id, err.Error())
+	err = fmt.Errorf("client [%s]: %v", id, err)
 	q.respChan <- &Response{id: id, err: err}
 }
 
@@ -158,6 +159,10 @@ func exprEval(v *visitor, labels map[string]string) (bool, error) {
 }
 
 func binOpEval(idents *[]ident) (bool, error) {
+	if len((*idents)) == 0 {
+		return false, errQuery
+	}
+
 	i := 0
 	for {
 		if len((*idents)) == 1 {
@@ -197,6 +202,8 @@ func binOpEval(idents *[]ident) (bool, error) {
 
 		if len((*idents)) > 4 {
 			i += 2
+		} else {
+			return false, errNotSupportOperator
 		}
 	}
 }
