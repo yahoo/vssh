@@ -6,6 +6,7 @@ package vssh
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -60,6 +61,7 @@ L+Ha2sPh5OB4w+j/xdvWwdevCA11HE3MDqjN6Uq0EMKfAlEbgkqePQB+uiFhSf3laAybgm
 KNj5a3Q/DLNfsAAAAbbWVocmRhZEBNLU1hY0Jvb2stUHJvLmxvY2Fs
 -----END OPENSSH PRIVATE KEY-----`)
 	sshTestSrvAddr = "127.0.0.1:5522"
+	testSrvStdin   = ""
 )
 
 func init() {
@@ -306,7 +308,7 @@ func TestStream(t *testing.T) {
 
 	counter := 0
 	for stream.ScanStdout() {
-		stream.TextStdout()
+		stream.BytesStdout()
 		counter++
 	}
 
@@ -374,6 +376,13 @@ func handler(newChannel ssh.NewChannel) {
 			req.Reply(req.Type == "shell", nil)
 		}
 	}(requests)
+
+	// TestClientAttrRun needs stdin data
+	go func() {
+		buf := new(bytes.Buffer)
+		io.CopyN(buf, channel, 3)
+		testSrvStdin = buf.String()
+	}()
 
 	for line := range mockPing() {
 		io.Copy(channel, bytes.NewBufferString(line+"\n"))
@@ -505,5 +514,145 @@ func TestClientMem(t *testing.T) {
 	_, ok = clients.get(addr)
 	if ok {
 		t.Errorf("expect client %s deleted but still exist", addr)
+	}
+}
+
+func TestStreamInput(t *testing.T) {
+	ch := make(chan []byte, 1)
+	r := &Response{
+		inChan: ch,
+	}
+
+	s := r.GetStream()
+	s.Input(bytes.NewBufferString("foo"))
+	v := <-ch
+	if string(v) != "foo" {
+		t.Error("expect foo but got", string(v))
+	}
+}
+
+func TestStreamScanStdout(t *testing.T) {
+	ch := make(chan []byte, 1)
+	r := &Response{
+		outChan: ch,
+	}
+	s := r.GetStream()
+
+	s.done = true
+	ok := s.ScanStdout()
+	if ok {
+		t.Error("expect false but got", ok)
+	}
+
+	s.done = false
+	ch <- []byte("foo")
+	ok = s.ScanStdout()
+	if !ok {
+		t.Fatal("expect true but got", ok)
+	}
+
+	if s.TextStdout() != "foo" {
+		t.Fatal("expect foo but got", s.stderr)
+	}
+}
+
+func TestStreamScanStderr(t *testing.T) {
+	ch := make(chan []byte, 1)
+	r := &Response{
+		errChan: ch,
+	}
+	s := r.GetStream()
+
+	s.done = true
+	ok := s.ScanStderr()
+	if ok {
+		t.Fatal("expect false but got", ok)
+	}
+
+	s.done = false
+	ch <- []byte("foo")
+	ok = s.ScanStderr()
+	if !ok {
+		t.Fatal("expect true but got", ok)
+	}
+
+	if s.TextStderr() != "foo" {
+		t.Fatal("expect foo but got", s.stderr)
+	}
+}
+
+func TestClientAttrRun(t *testing.T) {
+	addr := sshTestSrvAddr
+	ch := make(chan *Response, 1)
+	client := &clientAttr{
+		addr:        addr,
+		config:      GetConfigUserPass("vssh", "vssh"),
+		maxSessions: 2,
+	}
+
+	q := &query{
+		respChan:    ch,
+		ctx:         context.Background(),
+		respTimeout: time.Second * 1,
+	}
+
+	// run not connected client
+	client.run(q)
+	<-ch
+	if !errors.Is(client.err, errNotConn) {
+		t.Fatalf("expect errNotConn but got %v", client.err)
+	}
+
+	client.connect()
+
+	// close conn to make session error
+	client.client.Close()
+	client.run(q)
+	r := <-ch
+	if r.err == nil {
+		t.Fatal("expect close network connection error")
+	}
+
+	client.connect()
+	q.cmd = "ping"
+	q.respTimeout = time.Second * 6
+	go client.run(q)
+	r = <-ch
+	r.inChan <- []byte("foo")
+	time.Sleep(time.Second * 1)
+	if testSrvStdin != "foo" {
+		t.Fatal("expect stdin foo but got", testSrvStdin)
+	}
+}
+
+func TestResponseExitStatus(t *testing.T) {
+	r := Response{exitStatus: 1}
+	if v := r.ExitStatus(); v != 1 {
+		t.Error("expect exist-status 1 but got", v)
+	}
+}
+
+func TestResponseID(t *testing.T) {
+	r := Response{id: "127.0.0.1:22"}
+	if v := r.ID(); v != "127.0.0.1:22" {
+		t.Error("expect id 127.0.0.1:22 but got", v)
+	}
+}
+
+func TestGetScanners(t *testing.T) {
+	vs := New().Start()
+	config := GetConfigUserPass("vssh", "vssh")
+	vs.AddClient(sshTestSrvAddr, config, SetMaxSessions(2), DisableRequestPty())
+	vs.Wait()
+
+	client, _ := vs.clients.get(sshTestSrvAddr)
+	session, err := client.newSession()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, _, err = client.getScanners(session, 100, 100)
+	if err != nil {
+		t.Fatal(err)
 	}
 }

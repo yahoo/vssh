@@ -21,6 +21,8 @@ func TestQueryExprEval(t *testing.T) {
 		{"(POP==LAX || POP==BUR) && OS==JUNOS", true},
 		{"OS==JUNOS && (POP==LAX || POP==BUR)", true},
 		{"OS!=JUNOS && (POP==LAX || POP==BUR)", false},
+		{"(OS==JUNOS) && (POP==LAX || POP==BUR)", true},
+		{"((OS==JUNOS) && (POP==LAX || POP==BUR))", true},
 	}
 
 	for _, x := range exprTests {
@@ -36,6 +38,30 @@ func TestQueryExprEval(t *testing.T) {
 
 		if ok != x.expected {
 			t.Fatalf("expect %t, got %t", x.expected, ok)
+		}
+	}
+
+	_, err := parseExpr("OS=JUNOS")
+	if err == nil {
+		t.Fatal("expect error but got nil")
+	}
+
+	v, err := parseExpr("OS")
+	if err != nil {
+		t.Fatal("expect error but got nil")
+	}
+	_, err = exprEval(v, labels)
+	if err == nil {
+		t.Fatal("expect error but got nil")
+	}
+
+	// not support operator
+	ops := []string{"&", "+", "<=", "<"}
+	for _, op := range ops {
+		v, err := parseExpr("OS == JUNOS " + op + " POP == LAX")
+		_, err = exprEval(v, labels)
+		if err == nil {
+			t.Fatal("expect error but got nil")
 		}
 	}
 }
