@@ -58,7 +58,7 @@ func TestQueryExprEval(t *testing.T) {
 	// not support operator
 	ops := []string{"&", "+", "<=", "<"}
 	for _, op := range ops {
-		v, err := parseExpr("OS == JUNOS " + op + " POP == LAX")
+		v, _ := parseExpr("OS == JUNOS " + op + " POP == LAX")
 		_, err = exprEval(v, labels)
 		if err == nil {
 			t.Fatal("expect error but got nil")

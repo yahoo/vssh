@@ -150,6 +150,10 @@ func exprEval(v *visitor, labels map[string]string) (bool, error) {
 		}
 	}
 
+	if len(results) < 1 {
+		return false, errQuery
+	}
+
 	ok, err := binOpEval(&results)
 	if err != nil {
 		return ok, err
@@ -159,10 +163,6 @@ func exprEval(v *visitor, labels map[string]string) (bool, error) {
 }
 
 func binOpEval(idents *[]ident) (bool, error) {
-	if len((*idents)) == 0 {
-		return false, errQuery
-	}
-
 	i := 0
 	for {
 		if len((*idents)) == 1 {
