@@ -35,8 +35,8 @@ var (
 	maxEstablishedRetry        = 20
 	actionQueueSize            = 1000
 	initNumProcess             = 1000
-	resetErrRecentSec          = time.Duration(300) * time.Second
-	reConnSec                  = time.Duration(10) * time.Second
+	resetErrRecentDur          = time.Duration(300) * time.Second
+	reConnDur                  = time.Duration(10) * time.Second
 
 	errSSHConfig = errors.New("ssh config can not be nil")
 	errNotExist  = errors.New("not exist")
@@ -254,7 +254,7 @@ func (v *VSSH) IncreaseProc(n ...int) {
 	}
 }
 
-// DecreaseProc destroy the idle processes / workers.
+// DecreaseProc destroys the idle processes / workers.
 func (v *VSSH) DecreaseProc(n ...int) {
 	num := 1
 	if len(n) > 0 {
@@ -264,6 +264,11 @@ func (v *VSSH) DecreaseProc(n ...int) {
 	for i := 0; i < num; i++ {
 		v.procSig <- struct{}{}
 	}
+}
+
+// CurrentProc returns number of running processes / workers
+func (v *VSSH) CurrentProc() uint64 {
+	return v.stats.processes
 }
 
 // Run sends a new run query with given context, command and timeout.
@@ -347,14 +352,14 @@ func (v *VSSH) reConnect(ctx context.Context) {
 
 	for {
 		select {
-		case <-time.Tick(reConnSec):
+		case <-time.Tick(reConnDur):
 			for client := range v.clients.enum() {
 				if client.err != nil && client.stats.errRecent < maxErrRecent {
 					if client.client != nil {
 						client.client.Close()
 					}
 					v.actionQ <- &connect{client}
-				} else if time.Since(client.lastUpdate) > resetErrRecentSec {
+				} else if time.Since(client.lastUpdate) > resetErrRecentDur {
 					client.stats.errRecent = 0
 				}
 			}
