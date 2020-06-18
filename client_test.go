@@ -242,7 +242,18 @@ func TestQueryWithLabel(t *testing.T) {
 	// should be return result
 	_, ok = <-respChan
 	if !ok {
-		t.Fatal("expect to get false but got", ok)
+		t.Fatal("expect to get true but got", ok)
+	}
+
+	client, ok := vs.clients.get(sshTestSrvAddr)
+	if !ok {
+		t.Error("expect test-client but not exist")
+	}
+
+	// persistent connection test
+	err = client.client.Close()
+	if err != nil {
+		t.Error("unexpected error as client should be open")
 	}
 
 	// wrong query
@@ -288,6 +299,12 @@ func TestOnDemand(t *testing.T) {
 		if err == nil {
 			t.Error("expect timeout error but err is nil")
 		}
+	}
+
+	time.Sleep(time.Millisecond * 100)
+	err := client.client.Close()
+	if err == nil {
+		t.Error("expected close client at OnDemand mode")
 	}
 }
 
