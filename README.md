@@ -26,7 +26,7 @@ labels := map[string]string {
 // sets labels to a client 
 vs.AddClient(addr, config, vssh.SetLabels(labels))
 // query with label
-vs.RunWithLabel(ctx, cmd, timeout, "POP == LAX || POP == DCA) && OS == JUNOS")
+vs.RunWithLabel(ctx, cmd, timeout, "(POP == LAX || POP == DCA) && OS == JUNOS")
 ```
 
 ### Basic example
