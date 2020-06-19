@@ -55,7 +55,7 @@ func TestDecreaseProc(t *testing.T) {
 
 func TestCurrentProc(t *testing.T) {
 	vs := New()
-	SetInitNumProcess(100)
+	SetInitNumProc(100)
 	vs.Start()
 	time.Sleep(time.Millisecond * 500)
 	n := vs.CurrentProc()
@@ -66,9 +66,9 @@ func TestCurrentProc(t *testing.T) {
 }
 
 func TestSetInitNumProcess(t *testing.T) {
-	SetInitNumProcess(100)
-	if initNumProcess != 100 {
-		t.Error("expect initNumProcess 100 but got", initNumProcess)
+	SetInitNumProc(100)
+	if initNumProc != 100 {
+		t.Error("expect initNumProcess 100 but got", initNumProc)
 	}
 }
 

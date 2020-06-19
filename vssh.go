@@ -34,7 +34,7 @@ var (
 	maxErrRecent        uint64 = 10
 	maxEstablishedRetry        = 20
 	actionQueueSize            = 1000
-	initNumProcess             = 1000
+	initNumProc                = 1000
 	resetErrRecentDur          = time.Duration(300) * time.Second
 	reConnDur                  = time.Duration(10) * time.Second
 
@@ -195,7 +195,7 @@ func (v *VSSH) Start() *VSSH {
 	go v.process(ctx)
 	go v.reConnect(ctx)
 
-	for i := 0; i < initNumProcess; i++ {
+	for i := 0; i < initNumProc; i++ {
 		v.procCtl <- struct{}{}
 	}
 
@@ -207,7 +207,7 @@ func (v *VSSH) StartWithContext(ctx context.Context) *VSSH {
 	go v.process(ctx)
 	go v.reConnect(ctx)
 
-	for i := 0; i < initNumProcess; i++ {
+	for i := 0; i < initNumProc; i++ {
 		v.procCtl <- struct{}{}
 	}
 
@@ -441,16 +441,16 @@ func SetClientsShardNumber(n int) {
 	clientsShardNum = n
 }
 
-// SetInitNumProcess sets the initial number of processes / workers.
+// SetInitNumProc sets the initial number of processes / workers.
 //
 // you need to set this number right after create vssh.
 //	vs := vssh.New()
-//	vs.SetInitNumProcess(200)
+//	vs.SetInitNumProc(200)
 //	vs.Start()
 // there are two other methods which in case you need to change
 // it at the middle of your code.
 //	IncreaseProc(n int)
 //	DecreaseProc(n int)
-func SetInitNumProcess(n int) {
-	initNumProcess = n
+func SetInitNumProc(n int) {
+	initNumProc = n
 }
