@@ -271,6 +271,20 @@ func (v *VSSH) CurrentProc() uint64 {
 	return v.stats.processes
 }
 
+// SetInitNumProc sets the initial number of processes / workers.
+//
+// you need to set this number right after create vssh.
+//	vs := vssh.New()
+//	vs.SetInitNumProc(200)
+//	vs.Start()
+// there are two other methods which in case you need to change
+// it at the middle of your code.
+//	IncreaseProc(n int)
+//	DecreaseProc(n int)
+func (v *VSSH) SetInitNumProc(n int) {
+	initNumProc = n
+}
+
 // Run sends a new run query with given context, command and timeout.
 //
 // timeout allows you to set a limit on the length of time the command
@@ -439,18 +453,4 @@ func (v *VSSH) SetLogger(l *log.Logger) {
 // on write/read with mutex. you can tune it if needed.
 func SetClientsShardNumber(n int) {
 	clientsShardNum = n
-}
-
-// SetInitNumProc sets the initial number of processes / workers.
-//
-// you need to set this number right after create vssh.
-//	vs := vssh.New()
-//	vs.SetInitNumProc(200)
-//	vs.Start()
-// there are two other methods which in case you need to change
-// it at the middle of your code.
-//	IncreaseProc(n int)
-//	DecreaseProc(n int)
-func SetInitNumProc(n int) {
-	initNumProc = n
 }
