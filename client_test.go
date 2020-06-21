@@ -302,8 +302,7 @@ func TestOnDemand(t *testing.T) {
 	}
 
 	time.Sleep(time.Millisecond * 100)
-	err := client.client.Close()
-	if err == nil {
+	if client.client != nil {
 		t.Error("expected close client at OnDemand mode")
 	}
 }
@@ -671,5 +670,28 @@ func TestGetScanners(t *testing.T) {
 	_, _, err = client.getScanners(session, 100, 100)
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestClientConnect(t *testing.T) {
+	c := &clientAttr{}
+	c.client = &ssh.Client{}
+	c.err = nil
+	c.connect()
+
+	// it shouldn't connect
+	// if c.client != nil && c.err == nil -> refuse connect
+	if c.err != nil {
+		t.Fatal("souldn't try connect once client connected w/ no error")
+	}
+
+	c.client = nil
+	c.maxSessions = 0
+	c.connect()
+
+	// it shouldn't connect
+	// maxSessions zero means out of service
+	if c.err != nil {
+		t.Fatal("shouldn't try connect when the max sessions is zero")
 	}
 }

@@ -68,11 +68,7 @@ func (q *query) run(v *VSSH) {
 			}
 
 			if v.mode {
-				client.Lock()
-				if client.client == nil || client.err != nil {
-					client.connect()
-				}
-				client.Unlock()
+				client.connect()
 			}
 
 			if client.err != nil {

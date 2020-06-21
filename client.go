@@ -312,8 +312,8 @@ func (c *clientAttr) getScanners(s *ssh.Session, lOut, lErr int64) (*bufio.Scann
 }
 
 func (c *clientAttr) setErr(err error) {
-	c.Lock()
-	defer c.Unlock()
+	//c.Lock()
+	//defer c.Unlock()
 	c.stats.errRecent++
 	c.stats.errCounter++
 	c.lastUpdate = time.Now()
@@ -334,6 +334,19 @@ func (c *clientAttr) labelMatch(v *visitor) bool {
 }
 
 func (c *clientAttr) connect() {
+	c.Lock()
+	defer c.Unlock()
+
+	// already connected w/o error
+	if c.client != nil && c.err == nil {
+		return
+	}
+
+	// out of service
+	if c.maxSessions == 0 {
+		return
+	}
+
 	timeout := time.Duration(dialTimeoutSec) * time.Second
 	conn, err := net.DialTimeout("tcp", c.addr, timeout)
 	if err != nil {
@@ -358,6 +371,7 @@ func (c *clientAttr) close() {
 	defer c.Unlock()
 	if c.curSessions == 0 {
 		c.client.Close()
+		c.client = nil
 	}
 }
 
