@@ -20,7 +20,7 @@ import (
 // This example demonstrates the use of stream
 func ExampleStream() {
 	vs := vssh.New().Start()
-	config, _ := vssh.GetConfigPEM("ubuntu", "myaws.pem")
+	config, _ := vssh.GetConfigPEM("ubuntu", "aws.pem")
 	vs.AddClient("54.193.17.197:22", config, vssh.SetMaxSessions(4))
 	vs.Wait()
 
@@ -107,7 +107,7 @@ func ExampleResponse() {
 // This example demonstrates integration vSSH with AWS EC2
 func Example_cloud() {
 	vs := vssh.New().Start()
-	config, _ := vssh.GetConfigPEM("ubuntu", "myaws.pem")
+	config, _ := vssh.GetConfigPEM("ubuntu", "aws.pem")
 
 	// AWS EC2 Golang SDK
 	// Please check their website for more information
@@ -178,4 +178,48 @@ func Example_cloud() {
 		// print exit status of the remote command
 		fmt.Println(resp.ExitStatus())
 	}
+}
+
+// This example demonstrates how to set limit the amount of returned data
+func ExampleSetLimitReaderStdout() {
+
+	// construct and start the vssh
+	vs := vssh.New().Start()
+
+	// create ssh configuration
+	// you can create this configuration by golang ssh package
+	config, _ := vssh.GetConfigPEM("ubuntu", "aws.pem")
+
+	// add client to vssh with one option: max-sessions
+	// there are other options that you can add to this method
+	vs.AddClient("54.215.209.152:22", config, vssh.SetMaxSessions(2))
+
+	// wait until vssh connected to the client
+	vs.Wait()
+
+	// create a context with cancel
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	timeout, _ := time.ParseDuration("6s")
+
+	// run dmesg command with limit the amounth of returned data to 512 bytes
+	respChan := vs.Run(ctx, "dmesg", timeout, vssh.SetLimitReaderStdout(1024))
+
+	// get the resp
+	resp := <-respChan
+	// in case of the connectivity issue to client
+	if err := resp.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	outTxt, errTxt, err := resp.GetText(vs)
+	// check the error like timeout but still
+	// we can have data on outTxt and errTxt
+	if err != nil {
+		log.Println(err)
+	}
+
+	fmt.Println(outTxt)
+	fmt.Println(errTxt)
 }
