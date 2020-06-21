@@ -56,11 +56,11 @@ func (c clients) enum() chan *clientAttr {
 	ch := make(chan *clientAttr, 1)
 	go func() {
 		for i := 0; i < clientsShardNum; i++ {
+			c[i].Lock()
 			for _, v := range c[i].clients {
-				c[i].Lock()
 				ch <- v
-				c[i].Unlock()
 			}
+			c[i].Unlock()
 		}
 		close(ch)
 	}()
