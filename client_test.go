@@ -499,8 +499,7 @@ func TestNewSession(t *testing.T) {
 
 	// enable pty - test server doesn't support
 	client.pty.enabled = true
-	session, err = client.newSession()
-	if err == nil {
+	if _, err = client.newSession(); err == nil {
 		t.Fatal("expect error but got", err)
 	}
 }

@@ -116,7 +116,12 @@ func Example_cloud() {
 		Region:      aws.String("us-west-1"),
 		Credentials: credentials.NewStaticCredentials("YOUR-ACCESSKEYID", "YOUR-SECRETACCESSKEY", ""),
 	}
-	ec2svc := ec2.New(session.New(awsConfig))
+	sess, err := session.NewSession(awsConfig)
+	if err != nil {
+		fmt.Println("error creating new session:", err.Error())
+		log.Fatal(err)
+	}
+	ec2svc := ec2.New(sess)
 	params := &ec2.DescribeInstancesInput{
 		// filter running instances at us-west-1
 		Filters: []*ec2.Filter{
@@ -136,7 +141,7 @@ func Example_cloud() {
 	for idx := range resp.Reservations {
 		for _, inst := range resp.Reservations[idx].Instances {
 			labels := make(map[string]string)
-			for _, tag := range *&inst.Tags {
+			for _, tag := range inst.Tags {
 				labels[*tag.Key] = *tag.Value
 			}
 			addr := net.JoinHostPort(*inst.PublicIpAddress, "22")

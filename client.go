@@ -270,11 +270,7 @@ func (c *clientAttr) newSession() (*ssh.Session, error) {
 }
 
 func (c *clientAttr) isSessionsMaxOut() bool {
-	if c.getSessions() >= c.maxSessions {
-		return true
-	}
-
-	return false
+	return c.getSessions() >= c.maxSessions
 }
 
 func (c *clientAttr) getScanners(s *ssh.Session, lOut, lErr int64) (*bufio.Scanner, *bufio.Scanner, error) {
@@ -488,7 +484,7 @@ func (r *Response) ExitStatus() int {
 }
 
 // ScanStdout provides a convenient interface for reading stdout
-// which it connected to remote host. it reads a line and buffer
+// which it connected to remote host. It reads a line and buffers
 // it. the TextStdout() or BytesStdout() methods returns the buffer
 // in string or bytes.
 func (s *Stream) ScanStdout() bool {
@@ -498,9 +494,7 @@ func (s *Stream) ScanStdout() bool {
 
 	var ok bool
 
-	select {
-	case s.stdout, ok = <-s.r.outChan:
-	}
+	s.stdout, ok = <-s.r.outChan
 
 	return ok
 }
@@ -526,9 +520,7 @@ func (s *Stream) ScanStderr() bool {
 
 	var ok bool
 
-	select {
-	case s.stderr, ok = <-s.r.errChan:
-	}
+	s.stderr, ok = <-s.r.errChan
 
 	return ok
 }
