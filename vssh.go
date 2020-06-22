@@ -48,7 +48,6 @@ type VSSH struct {
 	logger  *log.Logger
 	stats   stats
 	mode    bool
-	ctx     context.Context
 	bufPool sync.Pool
 
 	actionQ chan task
@@ -57,9 +56,7 @@ type VSSH struct {
 }
 
 type stats struct {
-	errors    uint64
 	queries   uint64
-	clients   uint64
 	connects  uint64
 	processes uint64
 }
@@ -363,10 +360,11 @@ func (v *VSSH) reConnect(ctx context.Context) {
 	if v.mode {
 		return
 	}
-
+	ticker := time.NewTicker(reConnDur)
+	defer ticker.Stop()
 	for {
 		select {
-		case <-time.Tick(reConnDur):
+		case <-ticker.C:
 			for client := range v.clients.enum() {
 				if client.err != nil && client.stats.errRecent < maxErrRecent {
 					if client.client != nil {
