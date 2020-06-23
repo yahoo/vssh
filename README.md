@@ -1,8 +1,8 @@
 # vSSH
 
-Go library to handle tens of thousands SSH connections and execute the command(s) with higher-level API for building network device / server automation. documentation and examples are available via [godoc](https://godoc.org/github.com/yahoo/vssh).
+Go library to handle tens of thousands SSH connections and execute the command(s) with higher-level API for building network device / server automation. Documentation and examples are available via [godoc](https://godoc.org/github.com/yahoo/vssh).
 
-[![Build Status](https://api.travis-ci.com/yahoo/vssh.svg?branch=master)](https://travis-ci.com/github/yahoo/vssh) 
+[![Build Status](https://api.travis-ci.com/yahoo/vssh.svg?branch=master)](https://travis-ci.com/github/yahoo/vssh)
 [![Go Report Card](https://goreportcard.com/badge/github.com/yahoo/vssh)](https://goreportcard.com/report/github.com/yahoo/vssh)
 [![Coverage Status](https://coveralls.io/repos/github/yahoo/vssh/badge.svg?branch=master&service=github1)](https://coveralls.io/github/yahoo/vssh?branch=master)
 [![GoDoc](https://godoc.org/github.com/yahoo/vssh?status.svg)](https://godoc.org/github.com/yahoo/vssh)
@@ -13,9 +13,9 @@ Go library to handle tens of thousands SSH connections and execute the command(s
 ## Features
 - Connect to multiple remote machines concurrently
 - Persistent SSH connection
-- DSL query based on the labels 
+- DSL query based on the labels
 - Manage number of sessions per SSH connection
-- Limit amount of stdout and stderr data in bytes 
+- Limit amount of stdout and stderr data in bytes
 - Higher-level API for building automation
 
 ### Sample query with label
@@ -24,7 +24,7 @@ labels := map[string]string {
   "POP" : "LAX",
   "OS" : "JUNOS",
 }
-// sets labels to a client 
+// sets labels to a client
 vs.AddClient(addr, config, vssh.SetLabels(labels))
 // query with label
 vs.RunWithLabel(ctx, cmd, timeout, "(POP == LAX || POP == DCA) && OS == JUNOS")
@@ -51,7 +51,7 @@ for resp := range respChan {
     log.Println(err)
       continue
     }
-    
+
   outTxt, errTxt, _ := resp.GetText(vs)
   fmt.Println(outTxt, errTxt, resp.ExitStatus())
 }
@@ -75,7 +75,7 @@ resp := <- respChan
 if err := resp.Err(); err != nil {
   log.Fatal(err)
 }
-  
+
 stream := resp.GetStream()
 defer stream.Close()
 
@@ -92,8 +92,8 @@ for stream.ScanStdout() {
 - Solaris
 
 ## License
-Code is licensed under the Apache License, Version 2.0 (the "License"). 
-Content is licensed under the CC BY 4.0 license. Terms available at https://creativecommons.org/licenses/by/4.0/. 
+Code is licensed under the Apache License, Version 2.0 (the "License").
+Content is licensed under the CC BY 4.0 license. Terms available at https://creativecommons.org/licenses/by/4.0/.
 
 ## Contribute
 Welcomes any kind of contribution, please follow the next steps:

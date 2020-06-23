@@ -89,10 +89,10 @@ func New() *VSSH {
 	}
 }
 
-// OnDemand changes VSSH connection behavior. by default VSSH
+// OnDemand changes VSSH connection behavior. By default VSSH
 // connects to all of the clients before any run request and
-// it maintains the authenticated SSH connection to all clients
-// we can call this "persistent SSH connection" but with
+// it maintains the authenticated SSH connection to all clients.
+// We can call this "persistent SSH connection" but with
 // OnDemand it tries to connect to clients once the run requested
 // and it closes the appropriate connection once the response data returned.
 func (v *VSSH) OnDemand() *VSSH {
@@ -185,7 +185,7 @@ func clientValidation(c *clientAttr) error {
 }
 
 // Start starts vSSH, including action queue and re-connect procedures.
-// you can construct and start the vssh like below:
+// You can construct and start the vssh like below:
 //	vs := vssh.New().Start()
 func (v *VSSH) Start() *VSSH {
 	ctx := context.Background()
@@ -263,19 +263,19 @@ func (v *VSSH) DecreaseProc(n ...int) {
 	}
 }
 
-// CurrentProc returns number of running processes / workers
+// CurrentProc returns number of running processes / workers.
 func (v *VSSH) CurrentProc() uint64 {
 	return v.stats.processes
 }
 
 // SetInitNumProc sets the initial number of processes / workers.
 //
-// you need to set this number right after create vssh.
+// You need to set this number right after creating vssh.
 //	vs := vssh.New()
 //	vs.SetInitNumProc(200)
 //	vs.Start()
-// there are two other methods which in case you need to change
-// it at the middle of your code.
+// There are two other methods in case you need to change
+// the settings in the middle of your code.
 //	IncreaseProc(n int)
 //	DecreaseProc(n int)
 func (v *VSSH) SetInitNumProc(n int) {
@@ -285,7 +285,7 @@ func (v *VSSH) SetInitNumProc(n int) {
 // Run sends a new run query with given context, command and timeout.
 //
 // timeout allows you to set a limit on the length of time the command
-// will run for. you can cancel the running command by context.WithCancel.
+// will run for. You can cancel the running command by context.WithCancel.
 func (v *VSSH) Run(ctx context.Context, cmd string, timeout time.Duration, opts ...RunOption) chan *Response {
 	respChan := make(chan *Response, 100)
 
@@ -381,7 +381,7 @@ func (v *VSSH) reConnect(ctx context.Context) {
 	}
 }
 
-// ForceReConn reconnects client immediately
+// ForceReConn reconnects the client immediately.
 func (v *VSSH) ForceReConn(addr string) error {
 	client, ok := v.clients.get(addr)
 	if !ok {
@@ -398,7 +398,8 @@ func (v *VSSH) ForceReConn(addr string) error {
 }
 
 // Wait stands by until percentage of the clients have been processed.
-// there is optional perentage as argument otherwise the percentage assumes 100%
+// An optional percentage can be passed as an argument - otherwise the default
+// value of 100% is used.
 func (v *VSSH) Wait(p ...int) (float64, error) {
 	var (
 		start = time.Now()
@@ -444,11 +445,11 @@ func (v *VSSH) SetLogger(l *log.Logger) {
 	v.logger = l
 }
 
-// SetClientsShardNumber sets clients shard number.
+// SetClientsShardNumber sets the clients shard number.
 //
 // vSSH uses map data structure to keep the clients
-// data in the memory. sharding helps to have better performance
-// on write/read with mutex. you can tune it if needed.
+// data in the memory. Sharding helps to have better performance
+// on write/read with mutex. This setting can be tuned if needed.
 func SetClientsShardNumber(n int) {
 	clientsShardNum = n
 }
