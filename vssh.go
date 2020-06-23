@@ -342,7 +342,7 @@ func (v *VSSH) RunWithLabel(ctx context.Context, cmd, queryStmt string, timeout 
 }
 
 // SetLimitReaderStdout sets limit for stdout reader.
-//	respChan := vs.Run(ctx, cmd, timeout, SetLimitReaderStdout(1024))
+//	respChan := vs.Run(ctx, cmd, timeout, vssh.SetLimitReaderStdout(1024))
 func SetLimitReaderStdout(n int64) RunOption {
 	return func(q *query) {
 		q.limitReadOut = n
