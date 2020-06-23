@@ -31,12 +31,12 @@ var (
 	dialTimeoutSec = 5
 )
 
-// TimeoutError represents timeout error
+// TimeoutError represents timeout error.
 type TimeoutError struct {
 	error
 }
 
-// MaxSessionsError represents max sessions error
+// MaxSessionsError represents max sessions error.
 type MaxSessionsError struct {
 	error
 }
@@ -63,7 +63,7 @@ type clientAttr struct {
 	sync.RWMutex
 }
 
-// Response represents the response for given session
+// Response represents the response for given session.
 type Response struct {
 	id string
 
@@ -78,8 +78,8 @@ type Response struct {
 	err        error
 }
 
-// Stream represents data stream for given response
-// it provides convenient interfaces to get the returned
+// Stream represents data stream for given response.
+// It provides convenient interfaces to get the returned
 // data real-time.
 type Stream struct {
 	r      *Response
@@ -412,7 +412,7 @@ func (r *Response) cancelTimeout() {
 	close(r.toCancel)
 }
 
-// GetText gets the final result of the given response
+// GetText gets the final result of the given response.
 func (r *Response) GetText(v *VSSH) (string, string, error) {
 	var (
 		data    []byte
@@ -457,17 +457,17 @@ func (r *Response) GetText(v *VSSH) (string, string, error) {
 	return bufOut.String(), bufErr.String(), stream.Err()
 }
 
-// Err returns response error
+// Err returns response error.
 func (r *Response) Err() error {
 	return r.err
 }
 
-// ID returns response identification
+// ID returns response identification.
 func (r *Response) ID() string {
 	return r.id
 }
 
-// GetStream constructs a new stream from a response
+// GetStream constructs a new stream from a response.
 func (r *Response) GetStream() *Stream {
 	if r.err != nil {
 		return nil
@@ -478,14 +478,14 @@ func (r *Response) GetStream() *Stream {
 	}
 }
 
-// ExitStatus returns the exit status of the remote command
+// ExitStatus returns the exit status of the remote command.
 func (r *Response) ExitStatus() int {
 	return r.exitStatus
 }
 
 // ScanStdout provides a convenient interface for reading stdout
 // which it connected to remote host. It reads a line and buffers
-// it. the TextStdout() or BytesStdout() methods returns the buffer
+// it. The TextStdout() or BytesStdout() methods return the buffer
 // in string or bytes.
 func (s *Stream) ScanStdout() bool {
 	if s.done {
@@ -499,19 +499,19 @@ func (s *Stream) ScanStdout() bool {
 	return ok
 }
 
-// TextStdout returns the most recent data that scanned by ScanStdout as string
+// TextStdout returns the most recent data scanned by ScanStdout as string.
 func (s *Stream) TextStdout() string {
 	return string(s.stdout)
 }
 
-// BytesStdout returns the most recent data that scanned by ScanStdout as bytes
+// BytesStdout returns the most recent data scanned by ScanStdout as bytes.
 func (s *Stream) BytesStdout() []byte {
 	return s.stdout
 }
 
 // ScanStderr provides a convenient interface for reading stderr
-// which it connected to remote host. it reads a line and buffer
-// it. the TextStdout() or BytesStdout() methods returns the buffer
+// which it connected to remote host. It reads a line and buffers
+// it. The TextStdout() or BytesStdout() methods return the buffer
 // in string or bytes.
 func (s *Stream) ScanStderr() bool {
 	if s.done {
@@ -525,17 +525,17 @@ func (s *Stream) ScanStderr() bool {
 	return ok
 }
 
-// TextStderr returns the most recent data that scanned by ScanStderr as string
+// TextStderr returns the most recent data scanned by ScanStderr as string.
 func (s *Stream) TextStderr() string {
 	return string(s.stderr)
 }
 
-// BytesStderr returns the most recent data that scanned by ScanStderr as bytes
+// BytesStderr returns the most recent data scanned by ScanStderr as bytes.
 func (s *Stream) BytesStderr() []byte {
 	return s.stderr
 }
 
-// Close cleans up the stream's response
+// Close cleans up the stream's response.
 func (s *Stream) Close() error {
 	if s.r == nil || s.r.session == nil {
 		return errSessNotEst
@@ -549,12 +549,12 @@ func (s *Stream) Close() error {
 	return nil
 }
 
-// Err returns stream response error
+// Err returns stream response error.
 func (s *Stream) Err() error {
 	return s.r.err
 }
 
-// Signal sends the given signal to remote process
+// Signal sends the given signal to remote process.
 func (s *Stream) Signal(sig ssh.Signal) {
 	s.r.sigChan <- sig
 }
