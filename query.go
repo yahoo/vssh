@@ -72,7 +72,7 @@ func (q *query) run(v *VSSH) {
 			}
 
 			if client.getErr() != nil {
-				q.respChan <- &Response{err: client.err}
+				q.respChan <- &Response{id: client.addr, err: client.err}
 				return
 			}
 
