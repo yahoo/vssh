@@ -422,7 +422,8 @@ func (v *VSSH) Wait(p ...int) (float64, error) {
 		retry++
 		for client := range v.clients.enum() {
 			total++
-			if client.client != nil {
+
+			if client.getClient() != nil {
 				established++
 			}
 		}

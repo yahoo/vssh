@@ -308,12 +308,22 @@ func (c *clientAttr) getScanners(s *ssh.Session, lOut, lErr int64) (*bufio.Scann
 }
 
 func (c *clientAttr) setErr(err error) {
-	//c.Lock()
-	//defer c.Unlock()
 	c.stats.errRecent++
 	c.stats.errCounter++
 	c.lastUpdate = time.Now()
 	c.err = err
+}
+
+func (c *clientAttr) getErr() error {
+	c.RLock()
+	defer c.RUnlock()
+	return c.err
+}
+
+func (c *clientAttr) getClient() *ssh.Client {
+	c.RLock()
+	defer c.RUnlock()
+	return c.client
 }
 
 func (c *clientAttr) labelMatch(v *visitor) bool {
