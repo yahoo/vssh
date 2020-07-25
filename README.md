@@ -6,7 +6,7 @@ Go library to handle tens of thousands SSH connections and execute the command(s
 [![Go Report Card](https://goreportcard.com/badge/github.com/yahoo/vssh)](https://goreportcard.com/report/github.com/yahoo/vssh)
 [![Coverage Status](https://coveralls.io/repos/github/yahoo/vssh/badge.svg?branch=master&service=github1)](https://coveralls.io/github/yahoo/vssh?branch=master)
 [![GoDoc](https://godoc.org/github.com/yahoo/vssh?status.svg)](https://godoc.org/github.com/yahoo/vssh)
-[![GoDev](https://img.shields.io/static/v1?label=godev&message=reference&color=007d9c)](https://pkg.go.dev/github.com/yahoo/vssh?tab=doc)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/yahoo/vssh?tab=doc)](https://pkg.go.dev/github.com/yahoo/vssh?tab=doc)
 
 ![Alt text](/docs/imgs/vssh.png?raw=true "vSSH")
 
