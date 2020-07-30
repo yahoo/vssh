@@ -60,7 +60,7 @@ for resp := range respChan {
 ### Stream example
 ```go
 vs := vssh.New().Start()
-config, _ := vssh.GetConfigPEM("mypem.pem")
+config, _ := vssh.GetConfigPEM("vssh", "mypem.pem")
 vs.AddClient("54.193.17.197:22", config, vssh.SetMaxSessions(4))
 vs.Wait()
 
