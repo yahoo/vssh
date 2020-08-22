@@ -115,7 +115,7 @@ func (c *clientAttr) run(q *query) {
 	)
 
 	if c.client == nil {
-		c.setErr(errNotConn)
+		setErr(c, errNotConn)
 		q.errResp(c.addr, errNotConn)
 		return
 	}
@@ -129,21 +129,21 @@ func (c *clientAttr) run(q *query) {
 
 	session, err := c.newSession()
 	if err != nil {
-		c.setErr(err)
+		setErr(c, err)
 		q.errResp(c.addr, err)
 		return
 	}
 
 	writer, err := session.StdinPipe()
 	if err != nil {
-		c.setErr(err)
+		setErr(c, err)
 		q.errResp(c.addr, err)
 		return
 	}
 
 	scanOut, scanErr, err := c.getScanners(session, q.limitReadOut, q.limitReadErr)
 	if err != nil {
-		c.setErr(err)
+		setErr(c, err)
 		q.errResp(c.addr, err)
 		return
 	}
@@ -370,6 +370,7 @@ func (c *clientAttr) connect() {
 	c.client = ssh.NewClient(sshConn, chans, req)
 	c.lastUpdate = time.Now()
 	c.err = nil
+	c.stats.errRecent = 0
 }
 
 func (c *clientAttr) close() {
@@ -575,4 +576,11 @@ func (s *Stream) Input(in io.Reader) {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(in)
 	s.r.inChan <- buf.Bytes()
+}
+
+// setErr is a helper func to update error with mutex
+func setErr(c *clientAttr, err error) {
+	c.Lock()
+	defer c.Unlock()
+	c.setErr(err)
 }

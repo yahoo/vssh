@@ -366,6 +366,7 @@ func (v *VSSH) reConnect(ctx context.Context) {
 		select {
 		case <-ticker.C:
 			for client := range v.clients.enum() {
+				client.Lock()
 				if client.err != nil && client.stats.errRecent < maxErrRecent {
 					if client.client != nil {
 						client.client.Close()
@@ -374,6 +375,7 @@ func (v *VSSH) reConnect(ctx context.Context) {
 				} else if time.Since(client.lastUpdate) > resetErrRecentDur {
 					client.stats.errRecent = 0
 				}
+				client.Unlock()
 			}
 		case <-ctx.Done():
 			return

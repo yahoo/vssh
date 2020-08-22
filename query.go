@@ -72,7 +72,9 @@ func (q *query) run(v *VSSH) {
 			}
 
 			if client.getErr() != nil {
+				client.RLock()
 				q.respChan <- &Response{id: client.addr, err: client.err}
+				client.RUnlock()
 				return
 			}
 
