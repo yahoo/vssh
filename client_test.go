@@ -598,6 +598,10 @@ func TestStreamScanStderr(t *testing.T) {
 	if s.TextStderr() != "foo" {
 		t.Fatal("expect foo but got", s.stderr)
 	}
+
+	if string(s.BytesStderr()) != "foo" {
+		t.Fatal("expect foo but got", s.stderr)
+	}
 }
 
 func TestClientAttrRun(t *testing.T) {
