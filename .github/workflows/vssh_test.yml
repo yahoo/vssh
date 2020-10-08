@@ -1,0 +1,27 @@
+name: "VSSH Test"
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: [1.13, 1.14]
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Test
+        run: go test -v -coverprofile=profile.cov .
+
+      - name: Coverallss
+        uses: shogo82148/actions-goveralls@v1
+        with:
+          path-to-profile: profile.cov
