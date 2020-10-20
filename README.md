@@ -2,7 +2,7 @@
 
 Go library to handle tens of thousands SSH connections and execute the command(s) with higher-level API for building network device / server automation. Documentation and examples are available via [godoc](https://godoc.org/github.com/yahoo/vssh).
 
-[![Build Status](https://api.travis-ci.com/yahoo/vssh.svg?branch=master)](https://travis-ci.com/github/yahoo/vssh)
+[![Test Status](https://github.com/yahoo/vssh/workflows/vSSH/badge.svg)](https://github.com/yahoo/vssh/actions?query=workflow%3AvSSH)
 [![Go Report Card](https://goreportcard.com/badge/github.com/yahoo/vssh)](https://goreportcard.com/report/github.com/yahoo/vssh)
 [![Coverage Status](https://coveralls.io/repos/github/yahoo/vssh/badge.svg?branch=master&service=github1)](https://coveralls.io/github/yahoo/vssh?branch=master)
 [![GoDoc](https://godoc.org/github.com/yahoo/vssh?status.svg)](https://godoc.org/github.com/yahoo/vssh)
