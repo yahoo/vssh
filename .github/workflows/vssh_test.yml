@@ -1,6 +1,18 @@
-name: "VSSH"
+name: "vSSH"
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
+  pull_request:
+    branches:
+      - master
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
 
 jobs:
   test:
