@@ -16,7 +16,7 @@ func TestForceReConn(t *testing.T) {
 		t.Error(err)
 	}
 
-	vs.ForceReConn("127.0.0.1:22")
+	_ = vs.ForceReConn("127.0.0.1:22")
 	if len(vs.actionQ) != 2 {
 		t.Fatal("expect to have two tasks but got", len(vs.actionQ))
 	}
@@ -136,6 +136,25 @@ func TestGetConfigPEM(t *testing.T) {
 	}
 
 	_, err = GetConfigPEM("vssh", "vssh.go")
+	if err == nil {
+		t.Error("expect error but nil")
+	}
+}
+
+func TestGetConfigPEMWithPassphrase(t *testing.T) {
+	_, err := GetConfigPEMWithPassphrase("vssh", "notexitfile", "pass1")
+	if err == nil {
+		t.Error("expect error but nil")
+	}
+
+	_, err = GetConfigPEMWithPassphrase("vssh", "vssh.go", "pass2")
+	if err == nil {
+		t.Error("expect error but nil")
+	}
+}
+
+func TestGetConfigSSHAgent(t *testing.T) {
+	_, err := GetConfigSSHAgent("root", "/path/to/socket/file")
 	if err == nil {
 		t.Error("expect error but nil")
 	}
