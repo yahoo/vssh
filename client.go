@@ -24,9 +24,9 @@ var (
 	errSessNotEst  = errors.New("session not established")
 	errNotConn     = errors.New("client hasn't connected")
 
-	maxOutChanBuf = 100
-	maxErrChanBuf = 100
-	maxInChanBuf  = 100
+	maxOutChanBuf = 1000
+	maxErrChanBuf = 1000
+	maxInChanBuf  = 1000
 
 	dialTimeoutSec = 5
 )
