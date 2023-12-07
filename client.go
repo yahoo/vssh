@@ -48,17 +48,18 @@ type clientStats struct {
 
 // clientAttr represents client attributes
 type clientAttr struct {
-	addr        string
-	labels      map[string]string
-	config      *ssh.ClientConfig
-	client      *ssh.Client
-	logger      *log.Logger
-	maxSessions uint8
-	curSessions uint8
-	lastUpdate  time.Time
-	pty         pty
-	stats       clientStats
-	err         error
+	addr             string
+	labels           map[string]string
+	config           *ssh.ClientConfig
+	client           *ssh.Client
+	logger           *log.Logger
+	maxSessions      uint8
+	curSessions      uint8
+	lastUpdate       time.Time
+	pty              pty
+	stats            clientStats
+	err              error
+	stdOutBufferSize int
 
 	sync.RWMutex
 }
@@ -295,6 +296,11 @@ func (c *clientAttr) getScanners(s *ssh.Session, lOut, lErr int64) (*bufio.Scann
 		scanOut = bufio.NewScanner(lReaderOut)
 	} else {
 		scanOut = bufio.NewScanner(readerOut)
+	}
+
+	if c.stdOutBufferSize != 0 {
+		buf := make([]byte, c.stdOutBufferSize)
+		scanOut.Buffer(buf, c.stdOutBufferSize)
 	}
 
 	if lErr > 0 {
